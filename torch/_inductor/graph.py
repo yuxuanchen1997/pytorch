@@ -1062,7 +1062,7 @@ class GraphLowering(torch.fx.Interpreter):
         target = self.qualify_name(target)
         if isinstance(example, SymTypes):
             expr = example.node.expr
-            self.graph_inputs[target] = expr
+            self.graph_inputs[target] = example.node.expr
             self.graph_input_names.append(target)
             return expr
         elif isinstance(example, (int, bool, float)):
