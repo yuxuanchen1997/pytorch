@@ -1520,6 +1520,9 @@ class FakeTensorMode(TorchDispatchMode):
             # Disallowing dynamic shapes can introduce a DynamicOutputShapeException
             # where it wasn't seen on a previous instance of the same op.
             self.shape_env.settings if self.shape_env else None,
+            # And include the epoch - this is really more of a Shape env which
+            # lives on the FakeTensorMode.
+            self.epoch,
         ]
         # Collect the id_hashed objects to attach a weakref finalize later
         id_hashed_objects: list[object] = []
@@ -1632,10 +1635,6 @@ class FakeTensorMode(TorchDispatchMode):
                     raise _BypassDispatchCache("constant attribute")
                 if is_sparse_any(arg):
                     raise _BypassDispatchCache(f"{arg.layout} tensor")
-                # FIXME: For now back out caching when there are symbolic nbytes
-                # - this doesn't seem to play nice with set(). See T196779132 for examples.
-                if isinstance(arg.untyped_storage().nbytes(), SymInt):
-                    raise _BypassDispatchCache("symbolic nbytes")
                 metadata = extract_tensor_metadata(arg)
                 metadata._flatten_into(result, self, state)
             elif isinstance(arg, Tensor):
@@ -1937,11 +1936,7 @@ class FakeTensorMode(TorchDispatchMode):
         if entry.is_output_tuple:
             outputs = [
                 self._get_output_tensor_from_cache_entry(
-                    state,
-                    output_info,
-                    key,
-                    func,
-                    args,
+                    state, output_info, key, func, args
                 )
                 for output_info in entry.output_infos
             ]

@@ -6933,8 +6933,6 @@ class ShapeEnv:
             },
         )
 
-    @lru_cache(256)
-    @record_shapeenv_event(save_tracked_fakes=True)
     def evaluate_expr(
         self,
         orig_expr: sympy.Basic,
@@ -7003,7 +7001,8 @@ class ShapeEnv:
         ):
             return orig_expr
 
-        # Don't track this one
+        # Don't track this one. (Because this cache is inside this function the
+        # cache only lasts for the invocation of this function call)
         @functools.lru_cache(None)
         def compute_concrete_val() -> sympy.Basic:
             if hint is None:
