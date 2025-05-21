@@ -22,7 +22,7 @@ static PyObject* THXPModule_getArchFlags(PyObject* self, PyObject* noargs) {
   // Since C10_STRINGIZE doesn't handle an empty string as its input correctly,
   // the string "\"\"" will be passed from cmake to indicate an empty string.
   static const char* EMPTY_FLAGS = "\"\"";
-  return THPUtils_packString(strcmp(flags, EMPTY_FLAGS) == 0 ? "" : flags);
+  return THPUtils_packString(std::strcmp(flags, EMPTY_FLAGS) == 0 ? "" : flags);
 #else
   Py_RETURN_NONE;
 #endif
